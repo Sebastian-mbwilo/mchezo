@@ -1,0 +1,1243 @@
+
+  <!DOCTYPE html>
+<html lang="en">
+<head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/jpg" href="pexels-francesco-ungaro-1670977.jpg">
+</head>
+<body>
+    <!-- Page content -->
+</body>
+</html>
+    <title id="app-title">Jiwe Karatasi Mkasi</title>
+    <!-- Tone.js kwa ajili ya sound effects -->
+    <script src="https://cdn.jsdelivr.net/npm/tone@14.8.49/build/Tone.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(circle at top left, #34495e 0%, #2c3e50 100%);
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-x: hidden; /* Zuia kusogeza kushoto-kulia */
+        }
+
+        /* Wrapper kwa ajili ya Menu na Game Container */
+        #main-wrapper {
+            display: flex;
+            justify-content: center; /* Weka kontena la mchezo katikati */
+            width: 95%;
+            max-width: 800px; 
+        }
+
+        /* Game Container */
+        .game-container {
+            background: rgba(44, 62, 80, 0.95);
+            backdrop-filter: blur(5px);
+            padding: 25px; /* Padding ndogo kwa skrini ndogo */
+            border-radius: 20px;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6), 0 0 70px rgba(0, 0, 0, 0.4) inset;
+            border: 2px solid #3498db;
+            width: 90vw; /* Upana kulingana na skrini */
+            max-width: 400px; /* Upana wa juu kabisa */
+            text-align: center;
+            position: relative; 
+            box-sizing: border-box; /* Hakikisha padding haiongezi upana */
+        }
+        
+        /* Hamburger Menu Icon (Kitufe cha Menyu) */
+        #menu-toggle-btn {
+            background-color: #e67e22; 
+            color: white;
+            border: none;
+            padding: 10px;
+            width: 50px; 
+            height: 50px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s;
+            box-shadow: 0 4px #d35400; 
+            position: relative;
+            z-index: 20; 
+        }
+        #menu-toggle-btn:hover { background-color: #f39c12; }
+        #menu-toggle-btn:active { box-shadow: 0 1px #d35400; transform: translateY(3px); }
+        
+        /* Icon ya Mistari Mitatu (SVG) */
+        .hamburger-icon {
+            display: block;
+            width: 100%;
+            height: 100%;
+            fill: white;
+        }
+
+        /* Side Menu Dropdown */
+        #side-menu {
+            position: fixed; /* Imefungwa kwenye skrini */
+            left: 15px; /* Nafasi kutoka kushoto */
+            top: 15px; /* Nafasi kutoka juu */
+            min-width: 220px;
+            z-index: 100; /* Juu ya vitu vingine */
+        }
+
+        #menu-content {
+            background: #34495e;
+            border-radius: 8px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+            margin-top: 10px;
+            padding: 10px 0;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateX(-20px);
+            transition: opacity 0.3s, transform 0.3s, visibility 0.3s;
+            border: 1px solid #2980b9;
+            z-index: 101; /* Juu ya kitufe */
+        }
+
+        #menu-content.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateX(0);
+        }
+
+        .menu-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            position: relative; 
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        .menu-item:hover {
+            background-color: #2c3e50;
+        }
+        .menu-item.selected-option {
+            font-weight: bold;
+            color: #f1c40f;
+        }
+        
+        /* Sub-Menu (Level na Lugha) */
+        .sub-menu {
+            position: absolute;
+            left: 100%;
+            top: 0;
+            min-width: 150px;
+            background: #2c3e50;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+            z-index: 102; /* Juu ya menyu kuu */
+            display: none;
+            margin-left: 5px;
+            border: 1px solid #e67e22;
+        }
+        
+        .menu-item:hover .sub-menu {
+            display: block;
+        }
+
+        .sub-menu-item {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .sub-menu-item:hover {
+            background-color: #3498db;
+        }
+        .sub-menu-item.selected {
+            background-color: #2ecc71;
+            font-weight: 700;
+        }
+        
+        /* Volume Icon Styling */
+        .volume-icon-display {
+            display: flex;
+            align-items: center;
+        }
+        .volume-icon-display svg {
+            width: 24px;
+            height: 24px;
+        }
+
+
+        /* Kichwa cha Mchezo (Header) */
+        h1 {
+            color: #ecf0f1;
+            background: -webkit-linear-gradient(45deg, #f1c40f, #e67e22, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.2em; /* Imepunguzwa kidogo kwa skrini ndogo */
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 900;
+            text-shadow: 0 0 8px rgba(241, 196, 15, 0.7);
+            border-bottom: 3px solid #f1c40f;
+            padding-bottom: 5px;
+            text-align: center;
+            margin: 0 0 25px 0; 
+        }
+        
+        /* Choice Buttons */
+        .choices {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .choice-btn {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 5px; /* Imepunguzwa padding */
+            flex: 1; /* Vitufe vinajigawa nafasi */
+            min-width: 85px; /* Upana wa chini kabisa */
+            height: 110px; /* Urefu umepunguzwa */
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 6px #2980b9; 
+            transition: transform 0.1s, box-shadow 0.1s, background-color 0.2s;
+        }
+        .choice-btn:hover { background-color: #5dade2; }
+        .choice-btn:active { box-shadow: 0 2px #2980b9; transform: translateY(4px); }
+        
+        /* Ukubwa wa Ikoni za Jiwe/Mkasi/Karatasi */
+        .choice-btn svg { width: 45px; height: 45px; } /* Zimepunguzwa */
+        .choice-btn .icon { font-size: 3em; line-height: 1; } /* Umepunguzwa */
+
+
+        /* Reset Button Style */
+        #reset-btn {
+            background-color: #2ecc71; /* Kijani */
+            color: #2c3e50; /* Rangi nyeusi ya maandishi */
+            border: none;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px #27ae60; /* Kivuli cha Kijani */
+            margin-bottom: 15px;
+        }
+        #reset-btn:hover { background-color: #3fce81; }
+        #reset-btn:active { box-shadow: 0 1px #27ae60; transform: translateY(3px); }
+
+
+        /* Matokeo na Alama */
+        .win { color: #2ecc71; } 
+        .lose { color: #e74c3c; } 
+        .draw { color: #f1c40f; } 
+        
+        /* CSS kwa Ajili ya Loading Animation */
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .thinking {
+            font-weight: 700;
+            font-size: 1.2em;
+            animation: pulse 1.2s infinite ease-in-out;
+            color: #3498db; 
+            text-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+        }
+
+        /* MUUNDO MPYA WA DISPLAY AREA */
+        .display-area {
+            border: 1px solid #555;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            min-height: 80px; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        #result-text {
+            font-size: 1.5em;
+            font-weight: 900;
+            margin-bottom: 5px;
+            margin-top: 0;
+            line-height: 1.2;
+        }
+        
+        /* New choices display container */
+        .choices-display {
+            display: flex;
+            justify-content: space-around;
+            font-size: 1em;
+            font-weight: 400;
+            color: #bdc3c7;
+        }
+        .choice-item {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+        .choice-value {
+            font-weight: 700;
+            color: #ecf0f1; 
+        }
+
+        /* Scoreboard */
+        .scoreboard {
+            display: flex;
+            justify-content: space-around;
+            padding: 15px 0;
+            border-top: 2px solid #2980b9;
+        }
+        .score-box {
+            font-size: 1.2em;
+            font-weight: 700;
+        }
+        .score-number {
+            display: block;
+            font-size: 3em;
+            color: #f1c40f;
+            margin-top: 5px;
+            line-height: 1;
+        }
+        
+        /* --- MODAL STYLES (Sheria & Takwimu) --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7); 
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
+            transition: opacity 0.3s;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #2c3e50;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 450px;
+            border: 3px solid #e67e22;
+            color: #ecf0f1;
+            position: relative;
+        }
+        
+        .modal-content h2 {
+            margin-top: 0;
+            color: #f1c40f;
+            border-bottom: 2px solid #e67e22;
+            padding-bottom: 10px;
+            font-size: 1.8em;
+        }
+
+        /* Close Button */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 5px 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            line-height: 1;
+            transition: background 0.2s;
+        }
+        .close-btn:hover { background: #c0392b; }
+        
+        /* Grafu ya Takwimu (CSS Bars) */
+        #stats-content h3 {
+            margin-top: 20px;
+            color: #3498db;
+        }
+        .bar-chart {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .bar-container {
+            display: flex;
+            align-items: center;
+        }
+        .bar-label {
+            width: 80px;
+            font-weight: 700;
+            font-size: 0.9em;
+        }
+        .bar-wrapper {
+            flex-grow: 1;
+            height: 25px;
+            background: #34495e;
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+        .bar {
+            height: 100%;
+            transition: width 0.5s ease-out;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 5px;
+            box-sizing: border-box;
+            color: #1a242d;
+            font-weight: 700;
+            font-size: 0.8em;
+        }
+        .win-bar { background-color: #2ecc71; }
+        .lose-bar { background-color: #e74c3c; }
+        .draw-bar { background-color: #f1c40f; }
+
+        /* --- MEDIA QUERY KWA SKRINI KUBWA --- */
+        @media (min-width: 450px) {
+            .game-container {
+                padding: 35px; /* Rudisha padding ya awali */
+            }
+            
+            h1 {
+                font-size: 2.5em; /* Rudisha saizi ya kichwa */
+            }
+
+            .choice-btn {
+                height: 120px; /* Rudisha urefu wa vitufe */
+                padding: 10px; /* Rudisha padding ya vitufe */
+            }
+
+            .choice-btn svg {
+                width: 55px; /* Rudisha saizi ya icon */
+                height: 55px;
+            }
+
+            .choice-btn .icon {
+                font-size: 3.5em; /* Rudisha saizi ya emoji */
+            }
+
+            #side-menu {
+                left: 20px; /* Ongeza nafasi kidogo kwenye skrini kubwa */
+                top: 20px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<div id="main-wrapper">
+    <!-- KITUFE CHA HAMBURGER MENU (KUSHOTO) -->
+    <div id="side-menu">
+        <button id="menu-toggle-btn" onclick="toggleMenu()">
+            <svg class="hamburger-icon" viewBox="0 0 24 24">
+                <path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/>
+            </svg>
+        </button>
+
+        <div id="menu-content" onclick="event.stopPropagation()">
+            <!-- 1. BADILISHA SAUTI (MUTE/UNMUTE) -->
+            <div class="menu-item" onclick="toggleMute()">
+                <span data-lang-key="menu_volume">Sauti: </span> 
+                <!-- Volume Icon Display -->
+                <span id="volume-icon-display" class="volume-icon-display">
+                    <!-- Icon inajazwa na JS -->
+                </span>
+            </div>
+            
+            <!-- 2. SHERIA ZA MCHEZO -->
+            <div class="menu-item" onclick="showRulesModal(); toggleMenu()">
+                <span data-lang-key="menu_rules">Sheria za Mchezo</span>
+            </div>
+            
+            <!-- 3. GRAPH YA TAKWIMU -->
+            <div class="menu-item" onclick="showStatsModal(); toggleMenu()">
+                <span data-lang-key="menu_stats">Takwimu za Mchezo</span>
+            </div>
+
+            <!-- 4. LEVEL YA MCHEZO -->
+            <div class="menu-item" id="level-menu-item">
+                <span data-lang-key="menu_level">Level: </span> 
+                <span id="level-display-menu">Kawaida</span> 
+                <!-- Sub-Menu kwa Level -->
+                <div class="sub-menu" id="level-sub-menu">
+                    <div class="sub-menu-item" data-level="kawaida" onclick="setLevel('kawaida')">Kawaida</div>
+                    <div class="sub-menu-item" data-level="rahisi" onclick="setLevel('rahisi')">Rahisi</div>
+                    <div class="sub-menu-item" data-level="ngumu" onclick="setLevel('ngumu')">Ngumu</div>
+                    <div class="sub-menu-item" data-level="haiwezekani" onclick="setLevel('haiwezekani')">Haiwezekani</div>
+                </div>
+            </div>
+
+            <!-- 5. BADILISHA LUGHA -->
+            <div class="menu-item" id="language-menu-item">
+                <span data-lang-key="menu_language">Lugha</span> 
+                <!-- Sub-Menu kwa Lugha -->
+                <div class="sub-menu" id="language-sub-menu">
+                    <div class="sub-menu-item" data-lang-code="sw" onclick="setLanguage('sw')">Kiswahili</div>
+                    <div class="sub-menu-item" data-lang-code="en" onclick="setLanguage('en')">English</div>
+                    <div class="sub-menu-item" data-lang-code="fr" onclick="setLanguage('fr')">Français</div>
+                    <div class="sub-menu-item" data-lang-code="zh" onclick="setLanguage('zh')">中文 (Kichina)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container">
+        <div class="header-section">
+            <h1 id="game-title" data-lang-key="h1">Jiwe Karatasi Mkasi</h1>
+        </div>
+
+        <div class="choices">
+            <!-- Jiwe -->
+            <button class="choice-btn" data-choice="jiwe" onclick="playGame('jiwe')">
+                <span class="icon">
+                    <!-- SVG kwa Jiwe -->
+                    <svg style="width:55px;height:55px" viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2m-1 15.5V16h2v1.5H11m-1-5.5H9v-2h2v2m1-2H10V9h2v1.5m3.5 0H14v-2h1.5v2M12 7.5c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4z"/></svg>
+                </span>
+                <span class="name" data-lang-key="choice_rock">Jiwe</span>
+            </button>
+            
+            <!-- Karatasi -->
+            <button class="choice-btn" data-choice="karatasi" onclick="playGame('karatasi')">
+                <span class="icon">&#x1F4DC;</span> <!-- Emoji kwa Karatasi -->
+                <span class="name" data-lang-key="choice_paper">Karatasi</span>
+            </button>
+            
+            <!-- Mkasi -->
+            <button class="choice-btn" data-choice="mkasi" onclick="playGame('mkasi')">
+                <span class="icon">&#x2702;&#xFE0F;</span> <!-- Emoji kwa Mkasi -->
+                <span class="name" data-lang-key="choice_scissors">Mkasi</span>
+            </button>
+        </div>
+
+        <!-- DISPLAY AREA - Matokeo na Chaguo -->
+        <div class="display-area">
+            <p id="result-text" data-lang-key="prompt_start">Chagua Kituo Chako!</p>
+            <div id="choices-text" class="choices-display">
+                
+                <!-- HII NDIO SEHEMU INAYOONYESHA CHAGUO LA MTUMIAJI -->
+                <div class="choice-item">
+                    <span id="player-choice-label" data-lang-key="score_you">Wewe:</span>
+                    <span id="player-choice-value" class="choice-value">---</span> <!-- Hapa ndio chaguo la mtumiaji linaingia (e.g. Jiwe) -->
+                </div>
+                
+                <!-- HII NDIO SEHEMU INAYOONYESHA CHAGUO LA KOMPYUTA -->
+                <div class="choice-item">
+                    <span id="computer-choice-label" data-lang-key="score_comp">Kompyuta:</span>
+                    <span id="computer-choice-value" class="choice-value">---</span> <!-- Hapa ndio chaguo la kompyuta linaingia (e.g. Mkasi) -->
+                </div>
+            </div>
+        </div>
+
+        <!-- RESET BUTTON - Kitufe kidogo -->
+        <button id="reset-btn" onclick="resetGame()" data-lang-key="btn_reset">Anzisha Upya Mchezo</button>
+
+        <!-- SCOREBOARD - Alama -->
+        <div class="scoreboard">
+            <div class="score-box">
+                <span data-lang-key="score_you">Wewe</span>
+                <span class="score-number" id="player-score">0</span>
+            </div>
+            <div class="score-box">
+                <span data-lang-key="score_comp">Kompyuta</span>
+                <span class="score-number" id="computer-score">0</span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- MODAL YA SHERIA -->
+<div id="rules-modal" class="modal-overlay" onclick="hideModal(event, 'rules-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="hideModal(null, 'rules-modal')">X</button>
+        <h2 data-lang-key="rules_title">Sheria za Rock Paper Scissors</h2>
+        
+        <ul id="rules-list" class="rules-list">
+            <!-- Content inajazwa na JS kulingana na lugha -->
+        </ul>
+        <p id="rules-footer" style="font-size: 0.9em; margin-top: 20px; opacity: 0.7;" data-lang-key="rules_footer">Jaribu kuwa wa kwanza kufikisha alama 5!</p>
+    </div>
+</div>
+
+<!-- MODAL YA TAKWIMU (STATS) -->
+<div id="stats-modal" class="modal-overlay" onclick="hideModal(event, 'stats-modal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <button class="close-btn" onclick="hideModal(null, 'stats-modal')">X</button>
+        <h2 data-lang-key="stats_title">Takwimu za Mchezo</h2>
+        
+        <p><strong data-lang-key="stats_rounds">Jumla ya Raundi Kuchezwa:</strong> <span id="total-rounds">0</span></p>
+        
+        <div class="bar-chart">
+            <div class="bar-container">
+                <span class="bar-label" data-lang-key="stats_win">Ushindi:</span>
+                <div class="bar-wrapper"><div id="win-bar" class="bar win-bar" style="width:0%">0%</div></div>
+            </div>
+            <div class="bar-container">
+                <span class="bar-label" data-lang-key="stats_loss">Kushindwa:</span>
+                <div class="bar-wrapper"><div id="lose-bar" class="bar lose-bar" style="width:0%">0%</div></div>
+            </div>
+            <div class="bar-container">
+                <span class="bar-label" data-lang-key="stats_draw">Droo:</span>
+                <div class="bar-wrapper"><div id="draw-bar" class="bar draw-bar" style="width:0%">0%</div></div>
+            </div>
+        </div>
+
+        <h3 data-lang-key="stats_current_level">Level ya Sasa:</h3>
+        <p id="current-level-stats">Kawaida</p>
+    </div>
+</div>
+
+
+<script>
+    // Constants for DOM elements and game logic
+    const choices = ['jiwe', 'karatasi', 'mkasi'];
+    let playerScore = 0;
+    let computerScore = 0;
+    let totalDraws = 0; // Kufuatilia Droo
+    let isProcessing = false; 
+    let currentLevel = 'kawaida'; 
+    let currentLanguage = 'sw'; // Lugha ya kuanzia
+    let isMuted = false; // State ya Sauti - Mute/Unmute
+    
+    // === INITALIZE DOM ELEMENTS ===
+    const playerScoreElement = document.getElementById('player-score');
+    const computerScoreElement = document.getElementById('computer-score');
+    const resultTextElement = document.getElementById('result-text');
+    // Elements mpya za kuonyesha chaguo
+    const playerChoiceValueElement = document.getElementById('player-choice-value');
+    const computerChoiceValueElement = document.getElementById('computer-choice-value');
+    // ===================================
+
+    const levelSettings = {
+        'rahisi': 0.25,      
+        'kawaida': 0.5,     
+        'ngumu': 0.8,       
+        'haiwezekani': 1.0  
+    };
+
+    // --- TRANSLATION DATA ---
+    const translations = {
+        'sw': {
+            h1: 'Jiwe Karatasi Mkasi',
+            app_title: 'Jiwe Karatasi Mkasi',
+            menu_volume: 'Sauti:', // NEW
+            menu_rules: 'Sheria za Mchezo',
+            menu_stats: 'Takwimu za Mchezo',
+            menu_level: 'Level: ',
+            menu_language: 'Lugha',
+            choice_rock: 'Jiwe',
+            choice_paper: 'Karatasi',
+            choice_scissors: 'Mkasi',
+            score_you: 'Wewe',
+            score_comp: 'Kompyuta',
+            btn_reset: 'Anzisha Upya Mchezo',
+            prompt_start: 'Chagua Kituo Chako!',
+            prompt_thinking: 'Kompyuta Inafikiria...', 
+            prompt_selected: 'Umechagua', 
+            result_win: 'Hongera! Umeshinda Raundi!',
+            result_lose: 'Pole, Kompyuta Imeshinda.',
+            result_draw: 'Droo! Chagueni tena.',
+            
+            // Rules Modal
+            rules_title: 'Sheria za Rock Paper Scissors',
+            rules_footer: 'Jaribu kuwa wa kwanza kufikisha alama 5!',
+            rules_list: [
+                'Jiwe (✊) linashinda <strong>Mkasi</strong> (✌️) (kwa kulivunja).',
+                'Karatasi (✋) inashinda <strong>Jiwe</strong> (✊) (kwa kulifunga).',
+                'Mkasi (✌️) unashinda <strong>Karatasi</strong> (✋) (kwa kuikata).',
+                'Ukichagua kitu kimoja na Kompyuta ikichagua kile kile, inakuwa <strong>Droo</strong>!'
+            ],
+
+            // Stats Modal
+            stats_title: 'Takwimu za Mchezo',
+            stats_rounds: 'Jumla ya Raundi Kuchezwa:',
+            stats_win: 'Ushindi:',
+            stats_loss: 'Kushindwa:',
+            stats_draw: 'Droo:',
+            stats_current_level: 'Level ya Sasa:',
+            
+            // Levels
+            level_rahisi: 'Rahisi',
+            level_kawaida: 'Kawaida',
+            level_ngumu: 'Ngumu',
+            level_haiwezekani: 'Haiwezekani',
+        },
+        'en': {
+            h1: 'Rock Paper Scissors',
+            app_title: 'Rock Paper Scissors',
+            menu_volume: 'Volume:', // NEW
+            menu_rules: 'Game Rules',
+            menu_stats: 'Game Statistics',
+            menu_level: 'Level: ',
+            menu_language: 'Language',
+            choice_rock: 'Rock',
+            choice_paper: 'Paper',
+            choice_scissors: 'Scissors',
+            score_you: 'You',
+            score_comp: 'Computer',
+            btn_reset: 'Reset Game',
+            prompt_start: 'Make Your Move!',
+            prompt_thinking: 'Computer is Thinking...',
+            prompt_selected: 'You Selected',
+            result_win: 'Congratulations! You Win the Round!',
+            result_lose: 'Sorry, Computer Wins.',
+            result_draw: 'Draw! Choose Again.',
+            
+            // Rules Modal
+            rules_title: 'Rules of Rock Paper Scissors',
+            rules_footer: 'Try to be the first to reach 5 points!',
+            rules_list: [
+                'Rock (✊) beats <strong>Scissors</strong> (✌️) (by smashing it).',
+                'Paper (✋) beats <strong>Rock</strong> (✊) (by covering it).',
+                'Scissors (✌️) beats <strong>Paper</strong> (✋) (by cutting it).',
+                'If you choose the same as the computer, it\'s a <strong>Draw</strong>!'
+            ],
+
+            // Stats Modal
+            stats_title: 'Game Statistics',
+            stats_rounds: 'Total Rounds Played:',
+            stats_win: 'Wins:',
+            stats_loss: 'Losses:',
+            stats_draw: 'Draws:',
+            stats_current_level: 'Current Level:',
+            
+            // Levels
+            level_rahisi: 'Easy',
+            level_kawaida: 'Normal',
+            level_ngumu: 'Hard',
+            level_haiwezekani: 'Impossible',
+        },
+        'fr': {
+            h1: 'Pierre Feuille Ciseaux',
+            app_title: 'Pierre Feuille Ciseaux',
+            menu_volume: 'Volume:', // NEW
+            menu_rules: 'Règles du Jeu',
+            menu_stats: 'Statistiques',
+            menu_level: 'Niveau: ',
+            menu_language: 'Langue',
+            choice_rock: 'Pierre',
+            choice_paper: 'Feuille',
+            choice_scissors: 'Ciseaux',
+            score_you: 'Vous',
+            score_comp: 'Ordinateur',
+            btn_reset: 'Redémarrer le Jeu',
+            prompt_start: 'Faites Votre Choix!',
+            prompt_thinking: 'L\'ordinateur Réfléchit...',
+            prompt_selected: 'Vous avez Choisi',
+            result_win: 'Félicitations! Vous Gagnez!',
+            result_lose: 'Désolé, l\'Ordinateur Gagne.',
+            result_draw: 'Égalité! Rejouez.',
+
+            // Rules Modal
+            rules_title: 'Règles de Pierre Feuille Ciseaux',
+            rules_footer: 'Essayez d\'être le premier à atteindre 5 points!',
+            rules_list: [
+                'La Pierre (✊) bat les <strong>Ciseaux</strong> (✌️) (en les brisant).',
+                'La Feuille (✋) bat la <strong>Pierre</strong> (✊) (en l\'enveloppant).',
+                'Les Ciseaux (✌️) battent la <strong>Feuille</strong> (✋) (en la coupant).',
+                'Si vous choisissez la même chose, c\'est une <strong>Égalité</strong>!'
+            ],
+
+            // Stats Modal
+            stats_title: 'Statistiques du Jeu',
+            stats_rounds: 'Manches Jouées au Total:',
+            stats_win: 'Victoires:',
+            stats_loss: 'Défaites:',
+            stats_draw: 'Égalités:',
+            stats_current_level: 'Niveau Actuel:',
+
+            // Levels
+            level_rahisi: 'Facile',
+            level_kawaida: 'Normal',
+            level_ngumu: 'Difficile',
+            level_haiwezekani: 'Impossible',
+        },
+        'zh': {
+            h1: '石头 剪刀 布',
+            app_title: '石头 剪刀 布',
+            menu_volume: '音量:', // NEW
+            menu_rules: '游戏规则',
+            menu_stats: '游戏统计',
+            menu_level: '难度: ',
+            menu_language: '语言',
+            choice_rock: '石头',
+            choice_paper: '布',
+            choice_scissors: '剪刀',
+            score_you: '你',
+            score_comp: '电脑',
+            btn_reset: '重新开始',
+            prompt_start: '请出招!',
+            prompt_thinking: '电脑思考中...',
+            prompt_selected: '你选择',
+            result_win: '恭喜! 你赢了!',
+            result_lose: '抱歉，电脑赢了。',
+            result_draw: '平局! 再来一次。',
+
+            // Rules Modal
+            rules_title: '石头 剪刀 布 规则',
+            rules_footer: '尝试第一个达到5分!',
+            rules_list: [
+                '石头 (✊) 胜过 <strong>剪刀</strong> (✌️) (通过砸碎).',
+                '布 (✋) 胜过 <strong>石头</strong> (✊) (通过包裹).',
+                '剪刀 (✌️) 胜过 <strong>布</strong> (✋) (通过剪开).',
+                '如果你的选择与电脑相同，则是 <strong>平局</strong>!'
+            ],
+
+            // Stats Modal
+            stats_title: '游戏统计',
+            stats_rounds: '总共进行的回合数:',
+            stats_win: '胜利:',
+            stats_loss: '失败:',
+            stats_draw: '平局:',
+            stats_current_level: '当前难度:',
+
+            // Levels
+            level_rahisi: '简单',
+            level_kawaida: '普通',
+            level_ngumu: '困难',
+            level_haiwezekani: '不可能',
+        }
+    };
+
+    // --- TONE.JS SOUND INITIALIZATION ---
+    // Tone.js inatumia Tone.Destination kwa ajili ya master volume control.
+    // Hizi ni synths za sauti mbalimbali
+    const rockSynth = new Tone.MembraneSynth({ pitchDecay: 0.05, octaves: 1, envelope: { attack: 0.001, decay: 0.4, sustain: 0.0, release: 0.8 }, }).toDestination();
+    const paperSynth = new Tone.NoiseSynth({ noise: { type: "pink" }, envelope: { attack: 0.005, decay: 0.1, sustain: 0.0, release: 0.1 } }).toDestination();
+    const scissorsSynth = new Tone.DuoSynth({ vibratoAmount: 0.0, harmonicity: 0.1, voice0: { volume: -10, oscillator: { type: "sawtooth" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0.0, release: 0.1 } }, voice1: { volume: -10, oscillator: { type: "sine" }, envelope: { attack: 0.001, decay: 0.05, sustain: 0.0, release: 0.1 } } }).toDestination();
+    const winSynth = new Tone.MembraneSynth().toDestination();
+    const loseSynth = new Tone.Synth({ oscillator: { type: "square" }}).toDestination();
+    const drawSynth = new Tone.Synth().toDestination();
+    const resetSynth = new Tone.PluckSynth().toDestination();
+    const rulesChime = new Tone.MetalSynth({ frequency: 300, envelope: { attack: 0.001, decay: 0.2, release: 0.1 }, harmonicity: 3.1, modulationIndex: 10, resonance: 3000, octaves: 0.5 }).toDestination();
+    const menuToggleSynth = new Tone.Synth().toDestination(); // Sauti ya kufungua/kufunga menyu
+
+    function playChoiceSound(choice) { 
+        if (Tone.context.state !== 'running') { Tone.start(); }
+        const note = "C4";
+        if (choice === 'jiwe') rockSynth.triggerAttackRelease(note, "8n");
+        else if (choice === 'karatasi') paperSynth.triggerAttackRelease("4n");
+        else if (choice === 'mkasi') scissorsSynth.triggerAttackRelease(note, "16n");
+    } 
+    
+    function playResultSound(result) { 
+        if (Tone.context.state !== 'running') { Tone.start(); }
+        if (result === 'win') winSynth.triggerAttackRelease("G4", "8n");
+        else if (result === 'lose') loseSynth.triggerAttackRelease("C3", "8n");
+        else if (result === 'draw') drawSynth.triggerAttackRelease("C4", "8n");
+    } 
+    // --- MWISHO WA TONE.JS SOUND INITIALIZATION ---
+
+    // --- VOLUME CONTROL FUNCTIONS ---
+
+    /**
+     * Huweka icon sahihi ya sauti (kuwashwa au kuzimwa)
+     */
+    function updateVolumeIcon() {
+        const iconElement = document.getElementById('volume-icon-display');
+        
+        // Muted Icon SVG (Volume X)
+        const mutedIcon = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;"><path fill="currentColor" d="M12 4L9.91 6.09L12 8.18V4M4.27 3L2 5.27L6.81 10.09L4 13H7L12 18V10.18L14.73 12.91C14.5 12.91 14.26 12.87 14 12.83V14.5L16.29 16.79C15.53 17.38 14.7 17.81 13.8 18.09V20C15.34 19.5 16.78 18.66 18 17.46L20.73 20.23L22 18.96L4.27 3M19 12A7 7 0 0 0 16.94 8.21L18.35 6.8C19.46 8.46 20 10.19 20 12C20 13.46 19.64 14.79 19 16.03L19.96 17C20.67 15.68 21 14.12 21 12.44V12H19M7 9H4L9 14V6L7 9Z"/></svg>';
+        
+        // Unmuted Icon SVG (Volume High)
+        const unmutedIcon = '<svg viewBox="0 0 24 24" style="width:20px;height:20px;"><path fill="currentColor" d="M14 3.23V5.23C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.77V20.77C18 19.82 21 16.29 21 12C21 7.71 18 4.18 14 3.23M16.5 12C16.5 10.23 15.54 8.76 14 7.85V16.15C15.54 15.24 16.5 13.77 16.5 12M3 9V15H7L12 20V4L7 9H3Z"/></svg>';
+
+        iconElement.innerHTML = isMuted ? mutedIcon : unmutedIcon;
+    }
+
+    /**
+     * Hubadilisha hali ya sauti (Mute/Unmute)
+     */
+    function toggleMute() {
+        if (Tone.context.state !== 'running') { Tone.start(); }
+        
+        isMuted = !isMuted;
+        
+        if (isMuted) {
+            // Weka volume ya Tone.js iwe -Infinity (kimya kabisa)
+            Tone.Destination.volume.value = -Infinity;
+        } else {
+            // Weka volume iwe 0 (kiwango cha kawaida)
+            Tone.Destination.volume.value = 0; 
+            // Sauti kidogo kuonyesha imeanza
+            menuToggleSynth.triggerAttackRelease("G4", "16n"); 
+        }
+        
+        updateVolumeIcon(); // Sasisha icon kwenye menyu
+        toggleMenu(); // Funga menyu baada ya kuchagua
+    }
+
+    // --- GAME LOGIC ---
+
+    function getComputerChoice(playerChoice) {
+        const levelWinProbability = levelSettings[currentLevel];
+        const randomValue = Math.random();
+
+        const winningMap = { 'jiwe': 'karatasi', 'karatasi': 'mkasi', 'mkasi': 'jiwe' };
+        const losingMap = { 'jiwe': 'mkasi', 'karatasi': 'jiwe', 'mkasi': 'karatasi' };
+
+        if (randomValue < levelWinProbability) {
+            // Kompyuta inajaribu kushinda
+            return winningMap[playerChoice];
+        } else if (currentLevel === 'rahisi') {
+            // Kwa rahisi, jaribu kushindwa
+            return losingMap[playerChoice];
+        } else {
+            // Kwa kawaida/random, chagua kwa bahati nasibu
+            const randomChoiceIndex = Math.floor(Math.random() * choices.length);
+            return choices[randomChoiceIndex];
+        }
+    }
+
+    function determineWinner(playerChoice, computerChoice) {
+        if (playerChoice === computerChoice) { return 'draw'; }
+        if (
+            (playerChoice === 'jiwe' && computerChoice === 'mkasi') ||
+            (playerChoice === 'karatasi' && computerChoice === 'jiwe') ||
+            (playerChoice === 'mkasi' && computerChoice === 'karatasi')
+        ) {
+            return 'win';
+        } else {
+            return 'lose';
+        }
+    }
+
+    /**
+     * Huonyesha matokeo na kusasisha alama.
+     * Imehakikishwa kuonyesha wazi chaguo la mchezaji na kompyuta kwa majina ya Kiswahili.
+     */
+    function displayResult(result, playerChoice, computerChoice) {
+        const playerDisplay = translations[currentLanguage][`choice_${playerChoice}`];
+        const computerDisplay = translations[currentLanguage][`choice_${computerChoice}`];
+        const resultKey = `result_${result}`;
+
+        // 1. Sasisha Choice Display (Hii ndio sehemu ya marekebisho)
+        playerChoiceValueElement.textContent = playerDisplay;
+        computerChoiceValueElement.textContent = computerDisplay;
+
+        // 2. Ondoa class zote za matokeo (na uhuishaji)
+        resultTextElement.classList.remove('win', 'lose', 'draw', 'thinking');
+
+        if (result === 'win') {
+            playerScore++;
+            resultTextElement.textContent = translations[currentLanguage][resultKey];
+            resultTextElement.classList.add('win');
+        } else if (result === 'lose') {
+            computerScore++;
+            resultTextElement.textContent = translations[currentLanguage][resultKey];
+            resultTextElement.classList.add('lose');
+        } else {
+            totalDraws++; // Ongeza idadi ya droo
+            resultTextElement.textContent = translations[currentLanguage][resultKey];
+            resultTextElement.classList.add('draw');
+        }
+
+        playerScoreElement.textContent = playerScore;
+        computerScoreElement.textContent = computerScore;
+        isProcessing = false; 
+    }
+
+    function playGame(playerChoice) {
+        if (isProcessing) { return; }
+        isProcessing = true; 
+        
+        playChoiceSound(playerChoice); 
+
+        const playerDisplay = translations[currentLanguage][`choice_${playerChoice}`];
+        
+        // Weka chaguo la mchezaji mara moja
+        playerChoiceValueElement.textContent = playerDisplay;
+        computerChoiceValueElement.textContent = '...'; // Kitufe cha Kompyuta
+
+        // Anzisha loading animation
+        resultTextElement.textContent = translations[currentLanguage]['prompt_thinking'];
+        resultTextElement.classList.remove('win', 'lose', 'draw');
+        resultTextElement.classList.add('thinking'); 
+        
+        // Ficha Kompyuta mpaka iwe tayari
+        computerChoiceValueElement.classList.add('thinking');
+
+        setTimeout(() => {
+            const computerChoice = getComputerChoice(playerChoice); 
+            const result = determineWinner(playerChoice, computerChoice);
+            
+            // Ondoa uhuishaji wa kufikiri
+            computerChoiceValueElement.classList.remove('thinking');
+
+            displayResult(result, playerChoice, computerChoice);
+            playResultSound(result);
+        }, 1000); 
+    }
+
+    function resetGame() {
+        if (!isMuted) resetSynth.triggerAttackRelease("C3", "8n");
+        
+        playerScore = 0;
+        computerScore = 0;
+        totalDraws = 0; 
+        
+        playerScoreElement.textContent = '0';
+        computerScoreElement.textContent = '0';
+        resultTextElement.textContent = `${translations[currentLanguage]['prompt_start']} (${translations[currentLanguage]['menu_level']} ${translations[currentLanguage][`level_${currentLevel}`]})`;
+        
+        // Ondoa class zote za matokeo/uhuishaji
+        resultTextElement.classList.remove('win', 'lose', 'draw', 'thinking');
+        
+        // Weka upya chaguo
+        playerChoiceValueElement.textContent = '---';
+        computerChoiceValueElement.textContent = '---';
+        
+        isProcessing = false;
+    }
+
+    // --- MENU AND MODAL FUNCTIONS ---
+
+    /**
+     * Hufungua au kufunga menyu ya hamburger.
+     */
+    function toggleMenu() {
+        if (!isMuted) {
+             if (Tone.context.state !== 'running') { Tone.start(); }
+            menuToggleSynth.triggerAttackRelease("A4", "32n");
+        }
+
+        const menuContent = document.getElementById('menu-content');
+        menuContent.classList.toggle('active');
+        
+        // Funga sub-menus zote zinazojitokeza
+        document.querySelectorAll('.sub-menu').forEach(sub => sub.style.display = 'none');
+    }
+    
+    /**
+     * Huonyesha modal.
+     */
+    function showModal(modalId) {
+        if (!isMuted) {
+            if (Tone.context.state !== 'running') { Tone.start(); }
+            rulesChime.triggerAttackRelease("C5", "8n"); 
+        }
+        document.getElementById(modalId).classList.add('active');
+    }
+
+    /**
+     * Huficha modal.
+     */
+    function hideModal(event, modalId) {
+        if (!event || event.currentTarget === event.target || event.type === 'click') {
+            document.getElementById(modalId).classList.remove('active');
+        }
+    }
+    
+    function showRulesModal() {
+        showModal('rules-modal');
+    }
+    
+    function showStatsModal() {
+        updateStats();
+        showModal('stats-modal');
+    }
+
+    /**
+     * Hubadilisha level ya mchezo.
+     */
+    function setLevel(newLevel) {
+        currentLevel = newLevel;
+        const displayLevel = translations[currentLanguage][`level_${newLevel}`];
+        
+        // Sasisha menu display na classes
+        document.getElementById('level-display-menu').textContent = displayLevel;
+        document.querySelectorAll('.sub-menu-item[data-level]').forEach(el => {
+            el.classList.remove('selected');
+            if (el.dataset.level === newLevel) {
+                el.classList.add('selected');
+            }
+        });
+
+        if (!isMuted) {
+            if (Tone.context.state !== 'running') { Tone.start(); }
+            menuToggleSynth.triggerAttackRelease("G5", "16n");
+        }
+        
+        // Funga sub-menu na anzisha upya mchezo
+        document.getElementById('level-sub-menu').style.display = 'none';
+        resetGame(); 
+        event.stopPropagation();
+    }
+    
+    /**
+     * Hubadilisha lugha ya mchezo na kusasisha UI.
+     */
+    function setLanguage(langCode) {
+        currentLanguage = langCode;
+        
+        // 1. Sasisha elements zote zenye data-lang-key
+        document.querySelectorAll('[data-lang-key]').forEach(el => {
+            const key = el.getAttribute('data-lang-key');
+            if (translations[langCode][key]) {
+                el.textContent = translations[langCode][key];
+            }
+        });
+
+        // 2. Sasisha title ya App na HTML lang attribute
+        document.getElementById('app-title').textContent = translations[langCode]['app_title'];
+        document.documentElement.lang = langCode;
+
+        // 3. Sasisha Rules List (inahitaji muundo tofauti)
+        const rulesList = document.getElementById('rules-list');
+        rulesList.innerHTML = translations[langCode]['rules_list'].map(rule => `<li>${rule}</li>`).join('');
+
+        // 4. Sasisha level display in the main menu
+        document.getElementById('level-display-menu').textContent = translations[currentLanguage][`level_${currentLevel}`];
+        
+        // 5. Sasisha Level options kwenye sub-menu
+        document.querySelectorAll('.sub-menu-item[data-level]').forEach(el => {
+            const levelKey = `level_${el.dataset.level}`;
+            el.textContent = translations[langCode][levelKey];
+        });
+        
+        // 6. Sasisha Lugha iliyochaguliwa kwenye sub-menu
+        document.querySelectorAll('.sub-menu-item[data-lang-code]').forEach(el => {
+            el.classList.remove('selected');
+            if (el.dataset.langCode === langCode) {
+                el.classList.add('selected');
+            }
+        });
+        
+        // 7. Anzisha upya mchezo ili ujumbe wa kuanza uonyeshwe kwa lugha mpya
+        resetGame();
+
+        if (!isMuted) {
+            if (Tone.context.state !== 'running') { Tone.start(); }
+            menuToggleSynth.triggerAttackRelease("C6", "16n"); // Sauti ya kubadilisha lugha
+        }
+
+        document.getElementById('language-sub-menu').style.display = 'none';
+        event.stopPropagation();
+    }
+
+
+    /**
+     * Huhesabu na kusasisha grafu ya takwimu.
+     */
+    function updateStats() {
+        const totalRounds = playerScore + computerScore + totalDraws;
+        
+        document.getElementById('total-rounds').textContent = totalRounds;
+        document.getElementById('current-level-stats').textContent = translations[currentLanguage][`level_${currentLevel}`];
+
+        let winPct = 0;
+        let losePct = 0;
+        let drawPct = 0;
+
+        if (totalRounds > 0) {
+            winPct = (playerScore / totalRounds) * 100;
+            losePct = (computerScore / totalRounds) * 100;
+            drawPct = (totalDraws / totalRounds) * 100;
+        }
+
+        const formatPercent = (value) => `${Math.round(value)}%`;
+
+        // Sasisha Win Bar
+        const winBar = document.getElementById('win-bar');
+        winBar.style.width = formatPercent(winPct);
+        winBar.textContent = formatPercent(winPct);
+        
+        // Sasisha Lose Bar
+        const loseBar = document.getElementById('lose-bar');
+        loseBar.style.width = formatPercent(losePct);
+        loseBar.textContent = formatPercent(losePct);
+
+        // Sasisha Draw Bar
+        const drawBar = document.getElementById('draw-bar');
+        drawBar.style.width = formatPercent(drawPct);
+        drawBar.textContent = formatPercent(drawPct);
+    }
+
+
+    // --- EVENT LISTENERS KWA UI ---
+    
+    // Kuficha menyu na sub-menus kwa kubonyeza nje
+    document.body.addEventListener('click', (event) => {
+        const menuContainer = document.getElementById('side-menu');
+        const menuContent = document.getElementById('menu-content');
+        const isMenuClick = menuContainer.contains(event.target);
+        
+        // Funga menyu kuu
+        if (!isMenuClick && menuContent.classList.contains('active')) {
+            menuContent.classList.remove('active');
+        }
+
+        // Funga sub-menus zote
+        document.querySelectorAll('.sub-menu').forEach(sub => sub.style.display = 'none');
+    });
+
+    // Kuonyesha sub-menus kwa hover au click (kwa kuwa mobile haitumii hover)
+    document.getElementById('level-menu-item').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const subMenu = document.getElementById('level-sub-menu');
+        subMenu.style.display = subMenu.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('language-sub-menu').style.display = 'none'; // Funga nyingine
+    });
+
+    document.getElementById('language-menu-item').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const subMenu = document.getElementById('language-sub-menu');
+        subMenu.style.display = subMenu.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('level-sub-menu').style.display = 'none'; // Funga nyingine
+    });
+    
+    // Anzisha lugha ya Kiswahili, level ya Kawaida na sauti
+    window.onload = function() {
+        // Hakikisha Tone.js imeanza
+        if (Tone.context.state !== 'running') { Tone.start(); }
+        // Weka volume ya kuanzia iwe 0 (unmuted)
+        Tone.Destination.volume.value = 0; 
+        
+        setLanguage('sw'); 
+        setLevel('kawaida');
+        updateVolumeIcon(); // Weka icon ya kwanza ya sauti
+    };
+
+</script>
+
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
